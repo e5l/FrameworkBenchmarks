@@ -1,10 +1,10 @@
-FROM maven:3.6.1-jdk-11-slim as maven
-WORKDIR /ktor
-COPY ktor/pom.xml pom.xml
-COPY ktor/src src
-RUN mvn clean package -q
-
 FROM openjdk:11.0.3-jdk-stretch
-WORKDIR /ktor
-COPY --from=maven /ktor/target/tech-empower-framework-benchmark-1.0-SNAPSHOT-netty-bundle.jar app.jar
-CMD ["java", "-server","-XX:+UseNUMA", "-XX:+UseParallelGC", "-XX:+AggressiveOpts", "-XX:+AlwaysPreTouch", "-jar", "app.jar"]
+WORKDIR /app
+COPY ktor/gradle gradle
+COPY ktor/build.gradle build.gradle
+COPY ktor/gradle.properties gradle.properties
+COPY ktor/gradlew gradlew
+COPY ktor/settings.gradle settings.gradle
+COPY ktor/src src
+RUN /app/gradlew --no-daemon shadowJar
+CMD ["java", "-server", "-XX:+UseParallelGC", "-XX:+UseNUMA", "-Xms2G","-Xmx2G", "-jar", "/app/build/libs/bench.jar", "Netty"]

@@ -9,7 +9,7 @@ plugins {
 group 'org.jetbrains.ktor'
 version '1.0-SNAPSHOT'
 
-mainClassName = "MainKt"
+mainClassName = "io/ktor/tfb/MainKt"
 
 repositories {
     mavenCentral()
@@ -21,10 +21,12 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     compile "org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.20.0"
     compile "io.ktor:ktor-server-netty:$ktor_version"
+    compile "io.ktor:ktor-server-cio:$ktor_version"
+    compile "io.ktor:ktor-server-jetty:$ktor_version"
     compile "io.ktor:ktor-html-builder:$ktor_version"
-    compile "com.github.jasync-sql:jasync-postgresql:0.9.39"
-    compile "io.reactiverse:reactive-pg-client:0.11.3"
-    compile 'io.vertx:vertx-lang-kotlin-coroutines:3.7.0'
+    compile "mysql:mysql-connector-java:8.0.19"
+    compile "org.postgresql:postgresql:42.2.14"
+    compile "com.zaxxer:HikariCP:3.4.5"
 }
 
 compileKotlin {

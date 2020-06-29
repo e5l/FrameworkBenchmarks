@@ -1,31 +1,21 @@
-import com.github.jasync.sql.db.ConnectionPoolConfiguration
-import com.github.jasync.sql.db.SuspendingConnection
-import com.github.jasync.sql.db.asSuspending
-import com.github.jasync.sql.db.postgresql.PostgreSQLConnectionBuilder
-import io.ktor.application.call
-import io.ktor.application.install
-import io.ktor.features.DefaultHeaders
-import io.ktor.html.Placeholder
-import io.ktor.html.Template
-import io.ktor.html.insert
-import io.ktor.html.respondHtmlTemplate
-import io.ktor.http.ContentType
-import io.ktor.response.respondText
-import io.ktor.routing.get
-import io.ktor.routing.routing
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.netty.Netty
-import io.reactiverse.kotlin.pgclient.getConnectionAwait
-import io.reactiverse.kotlin.pgclient.preparedBatchAwait
-import io.reactiverse.kotlin.pgclient.preparedQueryAwait
+import com.github.jasync.sql.db.*
+import com.github.jasync.sql.db.postgresql.*
+import io.ktor.application.*
+import io.ktor.features.*
+import io.ktor.html.*
+import io.ktor.http.*
+import io.ktor.response.*
+import io.ktor.routing.*
+import io.ktor.server.engine.*
+import io.ktor.server.netty.*
+import io.reactiverse.kotlin.pgclient.*
 import io.reactiverse.pgclient.*
+import io.reactiverse.pgclient.PgClient
 import kotlinx.html.*
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JSON
-import kotlinx.serialization.list
-import java.lang.IllegalArgumentException
-import kotlin.random.Random
-import kotlin.random.nextInt
+import kotlinx.serialization.*
+import kotlinx.serialization.builtins.*
+import kotlinx.serialization.json.*
+import kotlin.random.*
 
 @Serializable
 data class Message(val message: String)
@@ -43,7 +33,7 @@ interface Repository {
     suspend fun updateWorlds(worlds: List<World>)
 }
 
-class JasyncRepository() : Repository {
+class JasyncRepository : Repository {
     private val dbConfig: ConnectionPoolConfiguration
     private val db: SuspendingConnection
 
@@ -154,7 +144,7 @@ class FortuneTemplate(val fortunes: List<Fortune>, val main: MainTemplate = Main
 }
 
 fun main(args: Array<String>) {
-    val db = when(args.firstOrNull()) {
+    val db = when (args.firstOrNull()) {
         "jasync-sql" -> JasyncRepository()
         "reactive-pg" -> ReactivePGRepository()
         else -> throw IllegalArgumentException("Must specify a postgres client")
@@ -174,19 +164,19 @@ fun main(args: Array<String>) {
 
             get("/json") {
                 call.respondText(
-                    JSON.stringify(messageSerializer, Message("Hello, World!")),
+                    Json.stringify(messageSerializer, Message("Hello, World!")),
                     ContentType.Application.Json
                 )
             }
 
             get("/db") {
-                call.respondText(JSON.stringify(worldSerializer, db.getWorld()), ContentType.Application.Json)
+                call.respondText(Json.stringify(worldSerializer, db.getWorld()), ContentType.Application.Json)
             }
 
             get("/query/") {
                 val queries = call.parameters["queries"]?.toBoxedInt(1..500) ?: 1
                 val worlds = (1..queries).map { db.getWorld() }
-                call.respondText(JSON.stringify(worldSerializer.list, worlds), ContentType.Application.Json)
+                call.respondText(Json.stringify(worldSerializer.list, worlds), ContentType.Application.Json)
             }
 
             get("/fortunes") {
@@ -204,7 +194,7 @@ fun main(args: Array<String>) {
 
                 db.updateWorlds(newWorlds)
 
-                call.respondText(JSON.stringify(worldSerializer.list, newWorlds), ContentType.Application.Json)
+                call.respondText(Json.stringify(worldSerializer.list, newWorlds), ContentType.Application.Json)
             }
         }
     }
